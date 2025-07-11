@@ -56,62 +56,35 @@ def cuenta_larga():
     print(f"Total Maya (días): {gTotal}")
     
     # GMT correlation constant: 584283 days
-    # This represents the number of days from the Maya epoch (0.0.0.0.0 4 Ahau 8 Cumku)
-    # to January 1, 1 AD in the proleptic Gregorian calendar
+    # This represents the Julian Day Number for Maya epoch 0.0.0.0.0 (4 Ahau 8 Cumku)
+    # which corresponds to August 11, 3114 BCE in the proleptic Gregorian calendar
     GMT_CORRELATION = 584283
     
-    # Calculate Julian Day Number
+    # Calculate Julian Day Number for this Maya date
     julian_day = gTotal + GMT_CORRELATION
     
-    # Convert Julian Day to Gregorian date
-    # Using the standard Julian Day to Gregorian conversion algorithm
-    # This is more accurate than simple division by 365.25
+    # Convert Julian Day to Gregorian date using standard algorithm
+    # This is the accepted method for JD to Gregorian conversion
     
-    # Julian Day 1721426 corresponds to January 1, 1 AD
-    days_since_1_AD = julian_day - 1721426
+    a = julian_day + 32044
+    b = (4 * a + 3) // 146097
+    c = a - (146097 * b) // 4
+    d = (4 * c + 3) // 1461
+    e = c - (1461 * d) // 4
+    m = (5 * e + 2) // 153
     
-    # Calculate the year more precisely
-    # Account for leap years in the Gregorian calendar
-    year = 1
-    remaining_days = days_since_1_AD
-    
-    # Handle negative dates (BCE)
-    if remaining_days < 0:
-        year = 0
-        remaining_days = -remaining_days
-        
-        # Count backwards for BCE years
-        while remaining_days > 0:
-            year -= 1
-            if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
-                year_days = 366
-            else:
-                year_days = 365
-            remaining_days -= year_days
-    else:
-        # Count forwards for CE years
-        while remaining_days >= 365:
-            if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
-                year_days = 366
-            else:
-                year_days = 365
-            
-            if remaining_days >= year_days:
-                remaining_days -= year_days
-                year += 1
-            else:
-                break
-    
-    gregorian_year = year
+    day = e - (153 * m + 2) // 5 + 1
+    month = m + 3 - 12 * (m // 10)
+    gregorian_year = 100 * b + d - 4800 + m // 10
     
     if flags.debug == 1:
         print(f"Julian Day: {julian_day}")
-        print(f"Days since 1 AD: {days_since_1_AD}")
+        print(f"Calculated date: {month}/{day}/{gregorian_year}")
         print(f"Calculated year: {gregorian_year}")
     
     # Determine if it's BCE or CE
     if gregorian_year <= 0:
-        final_year = abs(gregorian_year - 1)  # Adjust for no year 0
+        final_year = abs(gregorian_year) + 1  # Adjust for no year 0
         era = "a.C."
     else:
         final_year = gregorian_year
