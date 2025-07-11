@@ -49,35 +49,72 @@ def cuenta_larga():
     
     # Las cantidades manejadas son días, un baktun es 144000 días, un katun es 7200,  
     # un tun 360, un uinal es 20 y los kin son unidades individuales. Todas estas se  
-    # suman bajo la variable de gTotal para después ser divididas entre 365.25, que es la  
-    # cantidad promedio de días que tiene un año considerando años bisiestos, para así generar una cantidad en   
-    # años gregorianos que después se resta contra 3114, que es la correlación GMT (Goodman-Martinez-Thompson)
+    # suman bajo la variable de gTotal para después usar la correlación GMT (Goodman-Martinez-Thompson)
     # que es la más aceptada para convertir fechas mayas al calendario gregoriano.
     
     gTotal = baktun_days + katun_days + tun_days + uinal_days + kin
     print(f"Total Maya (días): {gTotal}")
     
-    # Convert to years using average year length (accounting for leap years)
-    # The GMT correlation constant is 584283 (days from Maya epoch to Jan 1, 1 CE)
-    # But for simplicity, we'll use the approximation method with 3114 BCE as base
+    # GMT correlation constant: 584283 days
+    # This represents the number of days from the Maya epoch (0.0.0.0.0 4 Ahau 8 Cumku)
+    # to January 1, 1 AD in the proleptic Gregorian calendar
+    GMT_CORRELATION = 584283
     
-    # Calculate approximate years from total days
-    years_from_maya_epoch = gTotal / 365.25
+    # Calculate Julian Day Number
+    julian_day = gTotal + GMT_CORRELATION
     
-    # Maya epoch corresponds to August 11, 3114 BCE in the proleptic Gregorian calendar
-    # So we subtract from 3114 to get the year
-    gregorian_year = years_from_maya_epoch - 3114
+    # Convert Julian Day to Gregorian date
+    # Using the standard Julian Day to Gregorian conversion algorithm
+    # This is more accurate than simple division by 365.25
+    
+    # Julian Day 1721426 corresponds to January 1, 1 AD
+    days_since_1_AD = julian_day - 1721426
+    
+    # Calculate the year more precisely
+    # Account for leap years in the Gregorian calendar
+    year = 1
+    remaining_days = days_since_1_AD
+    
+    # Handle negative dates (BCE)
+    if remaining_days < 0:
+        year = 0
+        remaining_days = -remaining_days
+        
+        # Count backwards for BCE years
+        while remaining_days > 0:
+            year -= 1
+            if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
+                year_days = 366
+            else:
+                year_days = 365
+            remaining_days -= year_days
+    else:
+        # Count forwards for CE years
+        while remaining_days >= 365:
+            if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
+                year_days = 366
+            else:
+                year_days = 365
+            
+            if remaining_days >= year_days:
+                remaining_days -= year_days
+                year += 1
+            else:
+                break
+    
+    gregorian_year = year
     
     if flags.debug == 1:
-        print(f"Years from Maya epoch: {years_from_maya_epoch}")
+        print(f"Julian Day: {julian_day}")
+        print(f"Days since 1 AD: {days_since_1_AD}")
         print(f"Calculated year: {gregorian_year}")
     
     # Determine if it's BCE or CE
-    if gregorian_year < 0:
-        final_year = abs(int(gregorian_year))
+    if gregorian_year <= 0:
+        final_year = abs(gregorian_year - 1)  # Adjust for no year 0
         era = "a.C."
     else:
-        final_year = int(gregorian_year)
+        final_year = gregorian_year
         era = "d.C."
     
     print(f"Año aproximado: {final_year} {era}")
@@ -90,7 +127,8 @@ def cuenta_larga():
     print(f"Uinal: {uinal} × 20 = {uinal_days:,} días")
     print(f"Kin: {kin} = {kin} días")
     print(f"Total: {gTotal:,} días")
-    print(f"Años desde época maya: {years_from_maya_epoch:.2f}")
+    print(f"Correlación GMT: {GMT_CORRELATION:,} días")
+    print(f"Día Juliano: {julian_day:,}")
     print(f"Resultado: {final_year} {era}")
     
     input("Presiona cualquier tecla para terminar...")
