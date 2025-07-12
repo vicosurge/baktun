@@ -1,6 +1,6 @@
 import argparse
 
-parser = argparse.ArgumentParser(description="This script can upload documents to our blogspot blog, refer to the flags below for more information")
+parser = argparse.ArgumentParser(description="The debug option is used to verify if the calculation is being done correctly")
 parser.add_argument("-d","--debug", help="Debug application, set to 1 for debugging, default 0", 
     default=0, type=int, dest="debug")
 flags = parser.parse_args()
@@ -8,7 +8,7 @@ flags = parser.parse_args()
 def cuenta_larga():  
     print("""
     Este script calcula la cuenta larga Maya y la convierte al Gregoriano.  
-    Es un aproximado que da únicamente el año, no da mes ni día. 
+    Ahora calcula la fecha completa: año, mes y día.
     Dentro del código se contiene el comentario de cómo funciona el código. 
     """)
     
@@ -77,10 +77,17 @@ def cuenta_larga():
     month = m + 3 - 12 * (m // 10)
     gregorian_year = 100 * b + d - 4800 + m // 10
     
+    # Convert month number to month name
+    month_names = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
+    month_name = month_names[month - 1]
+    
     if flags.debug == 1:
         print(f"Julian Day: {julian_day}")
-        print(f"Calculated date: {month}/{day}/{gregorian_year}")
-        print(f"Calculated year: {gregorian_year}")
+        print(f"Calculated date: {day}/{month}/{gregorian_year}")
+        print(f"Month name: {month_name}")
     
     # Determine if it's BCE or CE
     if gregorian_year <= 0:
@@ -90,7 +97,10 @@ def cuenta_larga():
         final_year = gregorian_year
         era = "d.C."
     
-    print(f"Año aproximado: {final_year} {era}")
+    # Format the complete date
+    complete_date = f"{day} de {month_name} de {final_year} {era}"
+    
+    print(f"Fecha completa: {complete_date}")
     
     # Show the calculation breakdown
     print("\nDesglose del cálculo:")
@@ -102,7 +112,7 @@ def cuenta_larga():
     print(f"Total: {gTotal:,} días")
     print(f"Correlación GMT: {GMT_CORRELATION:,} días")
     print(f"Día Juliano: {julian_day:,}")
-    print(f"Resultado: {final_year} {era}")
+    print(f"Resultado: {complete_date}")
     
     input("Presiona cualquier tecla para terminar...")
 
